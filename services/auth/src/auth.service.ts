@@ -1,4 +1,8 @@
-import { AuthModelInterface, MessageInterface, VerifyOtpInterface } from "./auth.interface";
+import {
+  AuthModelInterface,
+  MessageInterface,
+  VerifyOtpInterface,
+} from "./auth.interface";
 import AuthModel from "./auth.model";
 import { v4 as uuid } from "uuid";
 import jwt from "jsonwebtoken";
@@ -15,18 +19,28 @@ const getAccessToken = async (auth: AuthModelInterface): Promise<string> => {
   return token;
 };
 
-export const sendOtp = async (body: any): Promise<MessageInterface> => {
-  const authPayload = {
-    mobile: body.mobile,
-    refreshToken: uuid(),
-    expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-  };
+export const signup = async (body: any): Promise<MessageInterface> => {
+  await Promise.all([AuthModel.create(body), sendOtp({ mobile: body.mobile })]);
 
-  await AuthModel.findOneAndUpdate(
-    { mobile: body.mobile },
-    { $set: authPayload },
-    { upsert: true, new: true }
-  );
+  return { message: "Sign up sucess" };
+};
+
+export const sendOtp = async (body: any): Promise<MessageInterface> => {
+
+  const auth = await AuthModel.findOne({mobile:body.mobile})
+  if(!auth)
+    throw new Error("User not found try to signup first")
+  // const authPayload = {
+  //   mobile: body.mobile,
+  //   refreshToken: uuid(),
+  //   expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  // };
+
+  // await AuthModel.findOneAndUpdate(
+  //   { mobile: body.mobile },
+  //   { $set: authPayload },
+  //   { upsert: true, new: true }
+  // );
 
   return { message: "Otp sent successfully" };
 };
@@ -34,6 +48,8 @@ export const sendOtp = async (body: any): Promise<MessageInterface> => {
 export const verifyOtp = async (body: any): Promise<VerifyOtpInterface> => {
   const auth = await AuthModel.findOne({ mobile: body.mobile }).lean();
   if (!auth) throw new Error("User doesn't exist");
+
+  if (body.otp !== "1234") throw new Error("Otp verification failed");
 
   const accessToken = await getAccessToken(auth);
 

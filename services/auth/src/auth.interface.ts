@@ -1,6 +1,9 @@
-import { Document } from "mongoose";
+import { Document } from "mongoose"
+
 
 export interface AuthModelInterface extends Document {
+    fullname:string,
+    email:string,
     mobile:string,
     refreshToken:string,
     expiredAt:Date
