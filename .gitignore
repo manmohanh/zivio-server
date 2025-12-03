@@ -1,6 +1,7 @@
 # Node modules (all services)
 **/node_modules/
-**/.env
+**.env
+**/*.env
 
 # Build output (e.g. TypeScript)
 **/dist/
